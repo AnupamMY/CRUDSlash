@@ -82,15 +82,19 @@
         <?php 
         }
         ?>
-		<div class="table-wrapper">
-			<div class="table-title">
+		<div class="table-wrapper border">
+			<div class="table-title bg-info-subtle	">
 				<div class="row">
 					<div class="col-sm-6">
 						<h2>CodeIgniter 4 <b>CRUD</b></h2>
 					</div>
 					<div class="col-sm-6">
 						<a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i></a>
-						<a href="#deleteEmployeeModal" class="delete_all_data btn btn-danger" data-toggle="modal"><i class="material-icons">&#xE15C;</i> <span>Delete</span></a>						
+						<a href="#deleteEmployeeModal" class="delete_all_data btn btn-danger" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>						
+						<form class="form-inline">
+                         <input class="form-control" style="height:30px" type="search" placeholder="Search" aria-label="Search">
+                         <button class="btn btn-outline-success btn-primary  my-sm-0" type="submit">Search</button>
+                        </form>
 					</div>
 				</div>
 			</div>
@@ -113,7 +117,7 @@
                        if($users){
                         foreach($users as $user){
 
-                      
+             
                    ?>
 					<tr>
                         <input type="hidden" id="userId" name="id" value = "<?php echo $user['id'];?>" >
