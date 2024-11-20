@@ -63,9 +63,6 @@ class Home extends BaseController
         $data['email'] = $email;     
         $this->user->update($id,$data);
        
-       
-      
-    
         //Curl update user
         $ch = curl_init();
         $url = "http://localhost:5000/users/update/".$id;
@@ -84,22 +81,45 @@ class Home extends BaseController
         $id = $this->request->getVar('id');
         $this->user->delete($id);
         echo 1;
-        return redirect()->to(base_url("/"));
+
+        $url = "http://localhost:5000/users/delete/".$id;
+
+
+        $ch = curl_init();
+        
+        curl_setopt($ch, CURLOPT_URL, $url);    
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+       
+        $response = curl_exec($ch);
+
+        curl_close($ch);
+        //  return redirect()->to(base_url("/"));
     }
      
 
     public function deleteAllUser(){
-        // echo "connected";
-        //var_dump($ids);
-        //print_r($ids);
         
         $ids = $this->request->getVar('ids');
         for($i=0;$i<count($ids);$i++){
              $this->user->delete($ids[$i]);
+            
         }
-        //$this->user->delete($ids);
-        //redirect()->to(base_url("/"));
-        // echo "deleted";
+        $assosiate = ['ids'=>$ids];
+        $url = "http://localhost:5000/users/deleteAll";
+
+
+        $ch = curl_init();
+        
+        curl_setopt($ch, CURLOPT_URL, $url);    
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($assosiate));
+        $response = curl_exec($ch);
+
+        curl_close($ch);
+       
     }
 
 }
