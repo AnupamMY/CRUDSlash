@@ -13,12 +13,24 @@ class Home extends BaseController
         $this->user = new UserModel();
     }
     public function index()
-    {
+    {     
+        if($this->request->getVar("search")){
+        $search = $this->request->getVar("search");
         echo view('inc/header');
-        $data['users'] = $this->user->orderby('id',"DESC")->paginate(10,'group1');
+        $data['users'] = $this->user->like("name","$search%",'after')->orderby("name","ASC")->paginate(5,'group1');
+        $data['users'] = $this->user->like("id","$search%",'after')->paginate(5,'group1');
+        $data['users'] = $this->user->like("email","$search%",'after')->paginate(5,'group1');
         $data['pager'] = $this->user->pager; 
         echo view('home',$data);
         echo view('inc/footer');
+        }else{
+        echo view('inc/header');
+        $data['users'] = $this->user->orderby('id',"DESC")->paginate(5,'group1');
+        $data['pager'] = $this->user->pager; 
+        echo view('home',$data);
+        echo view('inc/footer');
+        }
+       
     }
 
     public function saveUser(){
@@ -47,7 +59,7 @@ class Home extends BaseController
       curl_close($ch);
 
       session()->setFlashData("sucess","Data added Sucessfully");
-       return redirect()->to(base_url());
+       return redirect()->to(base_url("/home"));
     }
 
     public function getSingleUser($id){
@@ -74,7 +86,7 @@ class Home extends BaseController
         $response = curl_exec($ch);
         curl_close($ch);
 
-        return redirect()->to(base_url());
+        return redirect()->to(base_url("/home"));
     }
 
     public function deleteUser(){
@@ -120,6 +132,12 @@ class Home extends BaseController
 
         curl_close($ch);
        
+    }
+
+    public function logout(){
+        $session = session();
+        $session->destroy();
+        return redirect()->to(base_url("/"));
     }
 
 }

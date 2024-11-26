@@ -65,10 +65,18 @@
 			}
 		}
 	})
+
+	$(document).on('click','.filter',function(){
+		var confirmation = confirm("Are you sure you want to delete?");
+	})
 </script>
 
 
-<div class="container-xl">
+<div class="
+
+
+
+">
 	<div class="table-responsive d-flex flex-column">
         <?php
            if(session()->getFlashData("sucess")){
@@ -86,15 +94,20 @@
 			<div class="table-title bg-info-subtle	">
 				<div class="row">
 					<div class="col-sm-6">
-						<h2>CodeIgniter 4 <b>CRUD</b></h2>
+						<h2><b>CRUD</b></h2>
 					</div>
 					<div class="col-sm-6">
-						<a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i></a>
-						<a href="#deleteEmployeeModal" class="delete_all_data btn btn-danger" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>						
+						
 						<form class="form-inline">
-                         <input class="form-control" style="height:30px" type="search" placeholder="Search" aria-label="Search">
+                         <input class="form-control" style="height:30px" name="search" type="search" placeholder="Search" aria-label="Search">
                          <button class="btn btn-outline-success btn-primary  my-sm-0" type="submit">Search</button>
-                        </form>
+						 
+						 <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal" style="margin-left:50px"><i class="material-icons">&#xE147;</i></a>
+						<a href="#deleteEmployeeModal" class="delete_all_data btn btn-danger" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>						
+                        <button type="click" class="filter" style="margin-left:10px;height:35px;padding-bottom:20px">Filter</button>
+						<h5 style="margin-top:10px;margin-left:50px;text-decoration:none"><a href="/">Logout</a></h5>
+						    
+					</form>
 					</div>
 				</div>
 			</div>
@@ -107,6 +120,7 @@
 								<label for="selectAll"></label>
 							</span>
 						</th>
+						<th>ID</th>
 						<th>Name</th>
 						<th>Email</th>
 						<th>Actions</th>
@@ -127,6 +141,7 @@
 								<label for="data_checkbox"></label>
 							</span>
 						</td>
+						<td><?php echo $user['id'];?></td>
 						<td><?php echo $user['name'];?></td>
 						<td><?php echo $user['email'];?></td>
 						<td>
@@ -140,6 +155,12 @@
                     ?>
 				</tbody>
 			</table>
+			<?php 
+			 if(count($users) ==0){
+				echo "<h3 style='color: blue;text-align:center'>No users found</h3>";
+			 } 
+			?>
+			
 			<div class="d-flex justify-content-center align-items-center">
 				<ul class="pagination">
 					<?=$pager->links('group1','bs_pagination') ;?>
@@ -203,4 +224,4 @@
 		</div>
 	</div>
 </div>
-
+<!--modal-->
