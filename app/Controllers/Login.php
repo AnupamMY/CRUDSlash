@@ -19,12 +19,11 @@ class Login extends BaseController{
     $password = $this->request->getVar('password');
 
     $user = $this->register->where('email',$email)->find();
+
     
- 
     if($user){
         $enc_password = $user[0]['password'];
         $dec_password = password_verify($password, $enc_password);
-        echo $dec_password; 
          if($dec_password){
            $session = session();
            $session->set('email',$email);

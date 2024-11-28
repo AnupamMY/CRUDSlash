@@ -30,6 +30,7 @@
                    if(res.includes("1")){
                       return window.location.href = window.location.href;
                 }
+				
               
                 
             }
@@ -66,17 +67,15 @@
 		}
 	})
 
-	$(document).on('click','.filter',function(){
-		var confirmation = confirm("Are you sure you want to delete?");
+	$(document).ready(function(){	
+    $('.js-example-basic-single').select2();
 	})
+
+
 </script>
 
 
-<div class="
-
-
-
-">
+<div class="container-xxl">
 	<div class="table-responsive d-flex flex-column">
         <?php
            if(session()->getFlashData("sucess")){
@@ -94,7 +93,7 @@
 			<div class="table-title bg-info-subtle	">
 				<div class="row">
 					<div class="col-sm-6">
-						<h2><b>CRUD</b></h2>
+						<h2><a href="/home" style="text-decoration:none;color:sky-blue;" ><b>CRUD</b></a></h2>
 					</div>
 					<div class="col-sm-6">
 						
@@ -102,10 +101,14 @@
                          <input class="form-control" style="height:30px" name="search" type="search" placeholder="Search" aria-label="Search">
                          <button class="btn btn-outline-success btn-primary  my-sm-0" type="submit">Search</button>
 						 
-						 <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal" style="margin-left:50px"><i class="material-icons">&#xE147;</i></a>
-						<a href="#deleteEmployeeModal" class="delete_all_data btn btn-danger" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>						
-                        <button type="click" class="filter" style="margin-left:10px;height:35px;padding-bottom:20px">Filter</button>
-						<h5 style="margin-top:10px;margin-left:50px;text-decoration:none"><a href="/">Logout</a></h5>
+						  <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal" style="margin-left:50px"><i class="material-icons">&#xE147;</i></a>
+						  <a href="#deleteEmployeeModal" class="delete_all_data btn btn-danger" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>						
+                          <a style="text-decoration:none;color:white;text-algin:center;" href="#filterModal" data-toggle="modal"> 
+						  <button style="height: 35px;margin-left:15px;background-color:sky-blue;">
+							Filter
+						  </button>
+						  </a>
+						<h5 style="margin-top:10px;margin-left:50px;text-decoration:none"><a href="/logout">Logout</a></h5>
 						    
 					</form>
 					</div>
@@ -127,11 +130,9 @@
 					</tr>
 				</thead>
 				<tbody>
-                    <?php
+                    <?php 
                        if($users){
                         foreach($users as $user){
-
-             
                    ?>
 					<tr>
                         <input type="hidden" id="userId" name="id" value = "<?php echo $user['id'];?>" >
@@ -160,15 +161,21 @@
 				echo "<h3 style='color: blue;text-align:center'>No users found</h3>";
 			 } 
 			?>
-			
 			<div class="d-flex justify-content-center align-items-center">
 				<ul class="pagination">
-					<?=$pager->links('group1','bs_pagination') ;?>
+					<?= $pager->links('group1', 'bs_pagination') ?>
 				</ul>
+				
+
 			</div>
+			<form class="download"> 
+	               <button type="Submit" ><a href="/download" style="text-decoration:none;color:white;">Download</a></button>
+				   <button type=""><a href="#uploadModal" data-toggle="modal" style="text-decoration:none;color:white;">Upload</a></button>
+            </form>
 		</div>
 	</div>        
 </div>
+
 <!-- Add Modal HTML -->
 <div id="addEmployeeModal" class="modal fade">
 	<div class="modal-dialog">
@@ -225,3 +232,71 @@
 	</div>
 </div>
 <!--modal-->
+<div id="filterModal" class="modal fade">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form >
+				<div class="modal-header">						
+					<h4 class="modal-title">Filter Employee</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				</div>
+				<div class="modal-body">
+				<select class="js-example-basic-single" name="name">
+				
+                   <option value="" class="form-control" >Username</option>
+                   <?php foreach($all_users as $user){ ?>
+					<option value="<?php echo $user['name']; ?>"><?php echo $user['name'];?>
+					</option>
+					<?php }?>
+                </select>	
+				</div>
+				<div class="modal-body">
+				<select class="js-example-basic-single" name="id">
+				
+                   <option value="" class="form-control" >ID</option>
+                   <?php foreach($all_users as $user){ ?>
+					<option value="<?php echo $user['id']; ?>"><?php echo $user['id'];?>
+					</option>
+					<?php }  ?>
+                </select>	
+				</div>
+				<div class="modal-body">
+				<select class="js-example-basic-single" name="email">
+				
+                   <option value="" class="form-control" >Email</option>
+                   <?php foreach($all_users as $user){ ?>
+					<option value="<?php echo $user['email']; ?>"><?php echo $user['email'];?>
+					</option>
+					<?php }  ?>
+                </select>	
+				</div>
+				<div class="modal-footer">
+					<input type="button" name ="submit" class="btn btn-default" data-dismiss="modal" value="Cancel">
+					<input type="submit" class="btn btn-info" value="Search">
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<!--uploadmodal--->
+<div id="uploadModal" class="modal fade">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action = "<?php echo base_url().'/uploadFile';?>" method = "POST" enctype="multipart/form-data">
+				<div class="modal-header">						
+					<h4 class="modal-title">Upload Csv File</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				</div>
+				<div class="modal-body">
+				   <div class="form-group">
+				   <input type="file" name="uploadFile">
+				   </div>
+				   <div >
+					<input type="submit"  value="Upload">
+				</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+

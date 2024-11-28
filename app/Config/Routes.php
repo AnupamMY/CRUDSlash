@@ -17,8 +17,15 @@ $routes->post('/create', 'Home::deleteAllUser');
 
 $routes->get('/register', "Register::index");
 $routes->post('/registerUser',"Register::register");
-$routes->get('/',"Home::logout");
+$routes->get('/logout',"Home::logout");
 // $routes->get('/login', "Login::login");
-
+//$routes->post('/home',"Home::filterUser");
 
 $routes->post('/loginUser',"Login::loginUser");
+
+//download
+//$routes->get('/download/(:any)', 'Home::download/$1');
+$routes->get('/download','Home::download');
+
+//upload File
+$routes->post('/uploadFile','Home::uploadFile');

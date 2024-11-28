@@ -270,3 +270,6 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+.download input{
+	height:40px;
+}

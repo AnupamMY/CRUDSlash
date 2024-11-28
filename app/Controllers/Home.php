@@ -1,8 +1,7 @@
 <?php
 namespace App\Controllers;
 use App\Models\UserModel;
-error_reporting(E_ALL);
-ini_set('display_erros',1);
+
 
 
 class Home extends BaseController
@@ -13,23 +12,59 @@ class Home extends BaseController
         $this->user = new UserModel();
     }
     public function index()
-    {     
-        if($this->request->getVar("search")){
+    {   
+        $name = $this->request->getVar('name');
+        $email = $this->request->getVar('email');
+        $id = $this->request->getVar('id');
+        
+        $data['all_users'] = $this->user->orderby('name','ASC')->findAll();
         $search = $this->request->getVar("search");
-        echo view('inc/header');
-        $data['users'] = $this->user->like("name","$search%",'after')->orderby("name","ASC")->paginate(5,'group1');
-        $data['users'] = $this->user->like("id","$search%",'after')->paginate(5,'group1');
-        $data['users'] = $this->user->like("email","$search%",'after')->paginate(5,'group1');
-        $data['pager'] = $this->user->pager; 
-        echo view('home',$data);
-        echo view('inc/footer');
-        }else{
-        echo view('inc/header');
-        $data['users'] = $this->user->orderby('id',"DESC")->paginate(5,'group1');
-        $data['pager'] = $this->user->pager; 
-        echo view('home',$data);
-        echo view('inc/footer');
+        if($search) {
+            $this->user->like('name', "$search%", 'after')->orderBy('name', 'ASC');
+            //$print_r($data['users']);
         }
+ 
+            $query = $this->user;
+            // orwhere joins query with the name,age,email
+            // username != 'Anupam' OR age = 50 OR email = 'anupam@gmail.com'
+            if($name) {
+                $query = $query->where('name', $name);
+            }
+            if($id) {
+                $query = $query->orWhere('id', $id);
+            }
+            if($email) {
+                $query = $query->orWhere('email', $email);
+            }
+            
+    
+        $data['users'] = $this->user->orderby('name','ASC')->paginate(5,'group1');
+        
+        
+           echo view('/inc/header');
+           //$data['all_users'] = $this->user->paginate(5,"group1");
+           $data['pager'] = $this->user->pager;
+           echo view('home', $data);
+           echo view('/inc/footer');
+           
+    //     if($this->request->getVar("search")){
+    //     $search = $this->request->getVar("search");
+    //     echo view('inc/header');
+    //    $data['users'] = $this->user->like("name","$search%",'after')->orderby("name","ASC")->findAll();//->paginate(10,'group1');
+    //    // $data['users'] = $this->user->like("id","$search%",'after')->paginate(5,'group1');
+    //     //$data['users'] = $this->user->like("email","$search%",'after')->paginate(5,'group1');
+    //     //$data['pager'] = $this->user->pager; 
+    //     echo view('home',$data);
+    //     echo view('inc/footer');
+    //     }else{
+    //     echo view('inc/header');
+        
+    //      $data['users'] = $this->user->orderby('id',"DESC")->findAll();
+    //     //print_r($data['users']);
+    //     //$data['pager'] = $this->user->pager; 
+    //     echo view('home',$data);
+    //     // echo view('inc/footer');
+    //     }
        
     }
 
@@ -133,11 +168,190 @@ class Home extends BaseController
         curl_close($ch);
        
     }
+    
+
+    // public function filterUser(){
+    // $name = $this->request->getVar('name');
+    // $email = $this->request->getVar('email');
+    // $id = $this->request->getVar('id');
+
+    // //     if($name || $email || $id){
+    // //     $data['users'] = $this->user->where("name",$name)->findAll();//paginate(5,'group1');
+    // //     $x['users'] = $this->user->where("email",$email)->findAll();//paginate(5,'group1');
+    // //     $y['users'] = $this->user->where("id",$id)->findAll();//paginate(5,'group1');
+        
+
+    // //     $data['users'] = array_merge($data['users'],$x['users'],$y['users']);
+    // //     $new_Array = []; 
+    // //      //print_r($y);
+    // //     for($i=0;$i<count($data['users']);$i++){
+    // //        $item = $data['users'][$i];
+    // //        $id = $item['id'];
+
+    // //        if(!array_key_exists($id,$new_Array)){
+    // //         $new_Array[$id] = [
+    // //             'id' => $item['id'],
+    // //             'name' => $item['name'],
+    // //             'email' => $item['email'],
+    // //         ];
+    // //        }
+    // //     }
+    // //     $data['users'] = $new_Array;
+    // //     //print_r($data['users']);
+    // //     // $data['users'] = $this->user->pager;
+    // //     // echo $data['users'];
+    // //         echo view('inc/header');
+    // //         //$data['pager'] = $this->user->pager;
+    // //         echo view("home",$data);
+    // //         echo view('inc/footer');
+    // //     //return redirect()->to(base_url("/"));
+    // // }
+
+    // }
+
+    public function download(){
+        $filename = 'users_data' . date('Ymd') . '.csv';
+        header("Content-Description: File Transfer");
+        header("Content-Disposition: attachment; filename=$filename");
+        header("Content-Type: application/csv; ");
+
+        $userModel = new UserModel();
+        
+        
+        $users = $userModel->findAll();
+
+        $csvData =[];
+         
+        
+        $csvData []= ['ID', 'Name', 'Email']; // Adjust according to your table structure
+        
+        
+        foreach ($users as $user) {
+            $csvData[] = [
+                $user['id'],            // Assuming 'id' is your primary key
+                $user['name'],
+                $user['email']
+            ];
+        }
+
+              
+
+       
+        $output = fopen('php://output', 'w');
+
+       
+        foreach ($csvData as $row) {
+            fputcsv($output, $row);
+        }
+
+
+        fclose($output);
+        exit();
+    }
+
+    public function uploadFile() {
+
+        $file = $this->request->getFile('uploadFile');
+        //echo $file;
+        // Check if there was an upload error
+        
+    
+        // Validate file type
+        $ext = $file->getClientExtension();
+        if ($ext !== 'csv') {
+            return redirect()->back()->with('error', 'Only CSV files are allowed');
+        }
+    
+        try {
+            // Create uploads directory if it doesn't exist
+            $uploadPath = WRITEPATH . 'uploads/';
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+    
+            // Move uploaded file
+            $newName = $file->getClientName();
+            if (!$file->move($uploadPath, $newName)) {
+                return redirect()->back()->with('error', 'Failed to move uploaded file');
+            }
+    
+            $filepath = $uploadPath . $newName;
+    
+            // Process CSV file
+            if (($handle = fopen($filepath, "r")) !== FALSE) {
+                $userModel = new UserModel();
+                $db = \Config\Database::connect();
+                $db->transStart(); // Start transaction
+    
+                $firstRow = true;
+                $successCount = 0;
+                $errorCount = 0;
+    
+                while (($filedata = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                    // Skip header row
+                    if ($firstRow) {
+                        $firstRow = false;
+                        continue;
+                    }
+    
+                    // Ensure we have all required fields
+                    if (count($filedata) >= 3) { // Adjust based on your CSV structure
+                        $data = [
+                            'name' => trim($filedata[0]), // Assuming first column is username
+                            'email'    => trim($filedata[1])  // Assuming third column is email
+                        ];
+    
+                        // Basic validation
+                        if (!empty($data['email']) && !empty($data['name'])) {
+                            try {
+                                // Check for existing user
+                                $existingUser = $userModel->where('email', $data['email'])->first();
+    
+                                if ($existingUser) {
+                                    $userModel->update($existingUser['id'], $data);
+                                } else {
+                                    $userModel->insert($data);
+                                }
+                                $successCount++;
+                            } catch (\Exception $e) {
+                                $errorCount++;
+                                log_message('error', 'Error processing CSV row: ' . $e->getMessage());
+                            }
+                        }
+                    }
+                }
+    
+                fclose($handle);
+                unlink($filepath); // Delete the temporary file
+    
+                $db->transComplete(); // Complete transaction
+    
+                if ($db->transStatus() === FALSE) {
+                    return redirect()->to(base_url('/home'))
+                        ->with('error', 'Transaction failed. Some records may not have been imported.');
+                }
+    
+                $message = "Import completed. Successfully processed $successCount records.";
+                if ($errorCount > 0) {
+                    $message .= " Failed to process $errorCount records.";
+                }
+    
+                return redirect()->to(base_url('/home'))->with('success', $message);
+            }
+    
+            return redirect()->to(base_url('/home'))->with('error', 'Could not open file for reading');
+    
+        } catch (\Exception $e) {
+            log_message('error', 'CSV import error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error processing file: ' . $e->getMessage());
+        }
+    }
+ 
 
     public function logout(){
         $session = session();
         $session->destroy();
-        return redirect()->to(base_url("/"));
+        return redirect()->to(base_url("/home"));
     }
 
 }
