@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers;
 use App\Models\UserModel;
-
+ini_set('max_execution_time',3600);     
 
 
 class Home extends BaseController
@@ -166,7 +166,9 @@ class Home extends BaseController
         $response = curl_exec($ch);
 
         curl_close($ch);
-       
+
+
+        echo 1;
     }
     
 
@@ -216,38 +218,22 @@ class Home extends BaseController
         header("Content-Type: application/csv; ");
 
         $userModel = new UserModel();
-        
-        
         $users = $userModel->findAll();
+      
+        $fp = fopen('php://output', 'w');
+        $csvData = ['ID', 'Name', 'Email']; // Adjust according to your table structur
+        
+        fputcsv($fp, $csvData);
 
-        $csvData =[];
-         
-        
-        $csvData []= ['ID', 'Name', 'Email']; // Adjust according to your table structure
-        
-        
-        foreach ($users as $user) {
-            $csvData[] = [
-                $user['id'],            // Assuming 'id' is your primary key
-                $user['name'],
-                $user['email']
-            ];
+        foreach ($users as $key => $value) {
+            fputcsv($fp, $value);
         }
 
-              
-
-       
-        $output = fopen('php://output', 'w');
-
-       
-        foreach ($csvData as $row) {
-            fputcsv($output, $row);
-        }
-
-
-        fclose($output);
+        fclose($fp);
         exit();
     }
+
+
 
     public function uploadFile() {
 
@@ -276,7 +262,11 @@ class Home extends BaseController
             }
     
             $filepath = $uploadPath . $newName;
-    
+
+
+            $mongoData = [];
+            $emptyData = [];
+
             // Process CSV file
             if (($handle = fopen($filepath, "r")) !== FALSE) {
                 $userModel = new UserModel();
@@ -286,7 +276,8 @@ class Home extends BaseController
                 $firstRow = true;
                 $successCount = 0;
                 $errorCount = 0;
-    
+                
+               
                 while (($filedata = fgetcsv($handle, 1000, ",")) !== FALSE) {
                     // Skip header row
                     if ($firstRow) {
@@ -295,32 +286,48 @@ class Home extends BaseController
                     }
     
                     // Ensure we have all required fields
-                    if (count($filedata) >= 3) { // Adjust based on your CSV structure
+                    if (count($filedata) >= 2) { // Adjust based on your CSV structure
                         $data = [
-                            'name' => trim($filedata[0]), // Assuming first column is username
-                            'email'    => trim($filedata[1])  // Assuming third column is email
+                            'name' => trim($filedata[0]), // Assuming first column is name
+                            'email'    => trim($filedata[1])  // Assuming second column is email
                         ];
-    
-                        // Basic validation
+                       
+                        // $empty_value = [];
+                        // if(empty($data['email']) || empty($data['name'])){
+                        //     array_push($empty_value,$data);
+                        // }
+                        // print_r($empty_value);
+                       // Basic validation
                         if (!empty($data['email']) && !empty($data['name'])) {
-                            try {
-                                // Check for existing user
                                 $existingUser = $userModel->where('email', $data['email'])->first();
-    
+                         
                                 if ($existingUser) {
                                     $userModel->update($existingUser['id'], $data);
-                                } else {
+                                } 
+                                else {
                                     $userModel->insert($data);
+                                    $id = $this->user->insertID();
+                                    $mongoData[$successCount] = [
+                                        '_id' => $id,
+                                        'name' => $data['name'],
+                                        'email' => $data['email']
+                                    ] ;
                                 }
                                 $successCount++;
-                            } catch (\Exception $e) {
-                                $errorCount++;
-                                log_message('error', 'Error processing CSV row: ' . $e->getMessage());
-                            }
+                            
+                        }else{
+                            $errorCount++;
+                            $emptyData[] = $data;
+                            print_r($emptyData);
+
+
                         }
+
+                     
                     }
                 }
-    
+                //print_r($existingUser);
+            //print_r($mongoData);
                 fclose($handle);
                 unlink($filepath); // Delete the temporary file
     
@@ -335,18 +342,54 @@ class Home extends BaseController
                 if ($errorCount > 0) {
                     $message .= " Failed to process $errorCount records.";
                 }
+                
+
+                $url = "http://localhost:5000/users/insertMany";
+
+
+                $ch = curl_init();
+                
+                curl_setopt($ch, CURLOPT_URL, $url);    
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($mongoData));
+                $response = curl_exec($ch);
+                curl_close($ch);
+                
+               // if($emptyData){
+                    // $filename = 'users_data' . date('Ymd') . '.csv';
+                    // header("Content-Description: File Transfer");
+                    // header("Content-Disposition: attachment; filename=$filename");
+                    // header("Content-Type: application/csv; ");
+            
+                    // $userModel = new UserModel();
+                    // $users = $userModel->findAll();
+                  
+                    // $fp = fopen('php://output', 'w');
+                    // $csvData = [ 'Name', 'Email']; // Adjust according to your table structur
+                    
+                    // fputcsv($fp, $csvData);
+            
+                    // foreach ($users as $key => $value) {
+                    //     fputcsv($fp, $value);
+                    // }
+                    // fclose($fp);
+                    // exit();
+                }
+                
+               return redirect()->to(base_url('/home'))->with('success', $message);
     
-                return redirect()->to(base_url('/home'))->with('success', $message);
-            }
-    
-            return redirect()->to(base_url('/home'))->with('error', 'Could not open file for reading');
-    
+               
+
+
+
         } catch (\Exception $e) {
             log_message('error', 'CSV import error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error processing file: ' . $e->getMessage());
+            //return redirect()->back()->with('error', 'Error processing file: ' . $e->getMessage());
         }
+                   
     }
- 
 
     public function logout(){
         $session = session();

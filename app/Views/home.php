@@ -56,11 +56,15 @@
 					url: "<?php echo base_url(); ?>"+"/deleteAllUser",
 					method: "POST",
 					data : {ids : ids},
-					success: function(result) {
-						console.log(result);
+					success: function(res) {
+						
+						if(res.includes("1")){
+                            return window.location.href = window.location.href;
+                        }
 						checkboxes.each(function() {
 							$(this).parent().parent().parent().hide(100);
 						})
+						
 					}
 				})
 			}
@@ -108,7 +112,7 @@
 							Filter
 						  </button>
 						  </a>
-						<h5 style="margin-top:10px;margin-left:50px;text-decoration:none"><a href="/logout">Logout</a></h5>
+						<h5 style="margin-top:10px;margin-left:50px;text-decoration:none;color:white"><a href="/logout">Logout</a></h5>
 						    
 					</form>
 					</div>
