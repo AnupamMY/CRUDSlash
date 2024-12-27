@@ -39,6 +39,8 @@ class Home extends BaseController
             
     
         $data['users'] = $this->user->orderby('name','ASC')->paginate(5,'group1');
+         
+
         
         
            echo view('/inc/header');
